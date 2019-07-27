@@ -1,0 +1,32 @@
+[
+    {
+        "trans_type": "Train",
+        "trans_number": "78A",
+        "departure": "Stockholm",
+        "arrival": "Madrid",
+        "seat_nr": "45B"
+    },
+    {
+        "trans_type": "Bus",
+        "trans_number": "BA10",
+        "departure": "Barcelona",
+        "arrival": "Gerona Airport"
+    },
+    {
+        "trans_type": "Plane",
+        "trans_number": "SK455",
+        "departure": "Gerona Aiport",
+        "arrival": "Stockholm",
+        "gate_nr": "45B",
+        "seat_nr": "3A"
+    },
+    {
+        "trans_type": "Plane",
+        "trans_number": "SK22",
+        "departure": "Stockholm",
+        "arrival": "New York JFK",
+        "gate_nr": "22B",
+        "seat_nr": "7B"
+    }
+
+]

@@ -1,0 +1,12 @@
+{
+	"name" : "vagrant/itinerator",
+	"description" : "Itinerator",
+	"require-dev" : {
+		"phpunit/phpunit" : "^8.2"
+	},
+    "autoload": {
+        "psr-4": {
+            "Itinerator\\": "Itinerator/"
+        }
+    }
+}
