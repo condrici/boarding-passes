@@ -6,7 +6,18 @@ use Itinerator\Transportation;
 
 class ItineratorSorter
 {
-    
+
+    /**
+     * Dependency classes for all transportation types
+     *
+     * @var array
+     */
+    protected $dependencies = array(
+        'bus' => 'Itinerator\Transportation\Bus',
+        'train' => 'Itinerator\Transportation\Train',
+        'plane' => 'Itinerator\Transportation\Plane'
+    );
+
     /**
      * Boarding tickets to be sorted
      * 
@@ -15,95 +26,90 @@ class ItineratorSorter
     public $boardingTickets;
     
     /**
-     * Dummy database with information about all routes
-     */
-    protected $dummyDatabase;
-    
-    /**
-     * Dependency classes for all transportation types
-     * 
-     * @var array
-     */
-    protected $dependencies = array(
-        'bus' => 'Itinerator\Transportation\Plane',
-        'plane' => 'Itinerator\Transportation\Bus',
-        'train' => 'Itinerator\Transportation\Train'
-    );
-    
-    /**
      * Constructor
-     * User defined tickets (should have same structure as $dumyDatabase)
      * 
-     * @param array $tickets
+     * @param array $boardingTickets
      */
-    public function __construct(array $tickets)
+    public function __construct(array $boardingTickets)
     {
-        $this->boardingTickets = $tickets;
-        $this->dummyDatabase = json_decode(file_get_contents(__DIR__ . '/Database.json'), true);
+        $this->boardingTickets = $boardingTickets;
     }
-    
+
     /**
-     * Find all boarding tickets without a unique transportation id
-     * This is for avoiding seat number conflicts
+     * Sort
+     * The order of the inner methods is important
      */
-    public function getBoardingTicketsSorted() 
+    public function sort(): object
     {
-        
-        $result = array();
-        
-        $boardingTickets = $this->getBoardingTickets();
-        $allDepartures = array_column($boardingTickets, 'departure');
-        $allArrivals = array_column($boardingTickets, 'arrival');
-        
-        for ($i=0; $i<count($boardingTickets); $i++) {
-            
-            $ticketDeparture = $boardingTickets[$i]['departure'];
-            $ticketArrival   = $boardingTickets[$i]['arrival'];
-            
-            $prevArrival   = $boardingTickets[array_search($ticketArrival, $allArrivals)] ?? null;
-            $nextDeparture = $boardingTickets[array_search($ticketDeparture, $allDepartures)] ?? null;
-            
+        $this->sortFirstLast();
+        $this->sortByConnection();
+        return $this;
+    }
+
+    /**
+     * Get itinerary objects for all boarding tickets
+     */
+    public function getItineraryObjects(): array
+    {
+
+        $itinerary = array();
+
+        try {
+            foreach ($this->boardingTickets as $ticket) {
+                $type = strtolower($ticket['Transportation']);
+                if (!isset($this->dependencies[$type])) {
+                    throw new \Exception('Unknown transportation type for: ' . $type);
+                }
+                $itinerary[] = new $this->dependencies[$type]($ticket);
+            }
+            return $itinerary;
+        } catch(\Exception $e) {
+            exit($e->getMessage());
         }
-        
-        return $result;
+
     }
-    
+
     /**
-     * Find boarding tickets with a unique transportation id 
-     * These are tickets that have 
+     * Update order of the first/last transports
      */
-    private function getBoardingTickets():array
+    private function sortFirstLast(): void
     {
-        $result = [];
-        $uniqueTickets = []; //removes duplicate tickets with a transportation id
-        
-        foreach ($this->boardingTickets as $ticket) {
-            $ticketTransNr = $ticket['trans_number'] ?? null;
-            $ticketSeatNr = $ticket['seat_nr'] ?? null;
-            
-            foreach ($this->dummyDatabase as $route) {
-                $routeTransNr = $route['trans_number'] ?? null;
-                $routeSeatNr = $route['seat_nr'] ?? null;
-                
-                if ($ticketTransNr == $routeTransNr) {
-                    array_push($uniqueTickets, $routeTransNr);
-                    $result[] = $route; 
+
+        $departures = array_column($this->boardingTickets, 'Departure');
+        $arrivals = array_column($this->boardingTickets, 'Arrival');
+
+        for ($i=0; $limit=count($arrivals), $i<$limit; $i++) {
+            if (!in_array($arrivals[$i], $departures)) {
+                array_push($this->boardingTickets, $this->boardingTickets[$i]);
+                unset($this->boardingTickets[$i]);
+            } else if (!in_array($departures[$i], $arrivals)) {
+                array_unshift($this->boardingTickets, $this->boardingTickets[$i]);
+                unset($this->boardingTickets[$i]);
+            }
+        }
+
+        // Reset keys
+        $this->boardingTickets = array_values($this->boardingTickets);
+
+    }
+
+    /**
+     * Sort transportations by subsequent arrival/departure
+     */
+    private function sortByConnection(): void
+    {
+        for ($i=0, $limit=count($this->boardingTickets); $i<$limit; $i++ ) {
+            foreach ($this->boardingTickets as $index => $ticket) {
+                if (strcasecmp($this->boardingTickets[$i]['Arrival'], $ticket['Departure']) == 0) {
+                    $nextIndex = $i+1;
+                    $nextTicket = $this->boardingTickets[$nextIndex];
+                    $this->boardingTickets[$nextIndex] = $ticket;
+                    $this->boardingTickets[$index] = $nextTicket;
+                    break;
                 }
             }
         }
-        
-        return $result;
-        
-    }
-    
-    /**
-     * Set dummy database
-     * Compare tickets against a user defined sample data
-     * Format should be the same as in the $dummyDatabase
-     */
-    public function setDatabase(array $database):array
-    {
-        $this->dummyDatabase = $database;
+
     }
     
 }

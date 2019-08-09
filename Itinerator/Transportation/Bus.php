@@ -4,31 +4,24 @@ namespace Itinerator\Transportation;
 
 class Bus extends TransportationAbstract 
 {
-    
-    protected $transportNr;
-    protected $cabinBaggage;
-    protected $seatNr;
-    protected $gateNr;
-    
+
+    const MESSAGE_INTRO = 'Take the airport bus from %s to %s. ';
+    const MESSAGE_SEAT = 'No seat assignment.';
+
     /**
-     * Construct
-     * 
-     * @param string $transportNr
+     * Show full itinerary
+     *
+     * @return string
      */
-    public function __construct($transportNr) 
+    public function getItinerary(): string
     {
-        $this->transportNr = $transportNr;
-    }
-    
-    /**
-     * Itinerary
-     * 
-     * {@inheritDoc}
-     * @see \Itinerator\Contracts\Transportation::getItinerary()
-     */
-    public function getItinerary():string 
-    {
-        
+        $message = static::MESSAGE_INTRO . static::MESSAGE_SEAT;
+
+        return sprintf(
+            $message,
+            $this->departure,
+            $this->arrival
+        );
     }
     
 }
