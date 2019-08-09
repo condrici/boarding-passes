@@ -1,5 +1,5 @@
 # boarding-passes
-Sorter for boarding passes without departure/arrival information
+Sorter for boarding passes and itinerator generator
 
 ## Description
 Boarding Passes is a simple tool for sorting transportation tickets in a subsequent order and to output an itinerary that is human-readable.
