@@ -16,4 +16,4 @@ Boarding Passes is a simple tool for sorting transportation tickets in a subsequ
 - For customization update sample.json, but keep the structure
 
 ## Notes
-The chosen design pattern for the application was the "Builder Pattern", which makes this example more extendable and easier to use, since subsequent method calling can be used for public methods. There are no unit tests, but they will be added in the future. Adherence to PSR-4 was considered as well.
+Two design patterns were used, Builder and Factory. Coding principles like SOLID, KISS and DRY were taken into consideration, but there is still place for improvement. Then, PSR-2 (manual without an IDE checker) and PSR-4 were used for standardization.
